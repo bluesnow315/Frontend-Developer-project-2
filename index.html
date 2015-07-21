@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+
+<head>
+   <meta charset="utf-8">
+  <title>Resume</title>
+  <!-- Load the page styles. -->
+  <link href="css/bootstrap.min.css" rel="stylesheet" type="text/css">
+
+  <!-- Animate the skills div -->
+  <link href="css/animate.css" rel="stylesheet" type="text/css">
+
+  <!-- animate the slider for the projects -->
+  <link href="css/slider-pro.min.css" rel="stylesheet" media="screen"/>
+  <link href="css/slider-pro.layers.css" rel="stylesheet" type="text/css">
+  <link href="css/style.css" rel="stylesheet" type="text/css">
+
+  <script src="js/jquery-1.11.3.min.js"></script>
+  <script src="js/helper.js"></script>
+
+  <!-- jQuery files for the text animation, slider and the globe. -->
+
+
+  <script src="js/jquery.lettering.js"></script>
+  <script src="js/jquery.textillate.js"></script>
+  <script src="js/jquery.sliderPro.min.js"></script>
+  <script src="js/fancybox/jquery.fancybox.pack.js"></script>
+  <script src="js/jquery.sliderPro.layers.js"></script>
+  <script src="js/three.min.js"></script>
+  <script src="js/renderers/Projector.js"></script>
+  <script src="js/renderers/CanvasRenderer.js"></script>
+  <script src="js/libs/stats.min.js"></script>
+
+  <!-- Google map for the project-->
+
+  <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?libraries=places"></script>
+
+  <!-- Font used on the web page-->
+  <link href='http://fonts.googleapis.com/css?family=Merriweather+Sans:400,700,400italic' rel='stylesheet' type='text/css'>
+
+  <meta name="viewport" content="width=device-width">
+
+  <!--Ready function to check if the document is loaded and then instatiate the slider -->
+  <script type="text/javascript">
+  $( document ).ready(function( $ ) {
+    $( '#projects' ).sliderPro({
+      width: 600,
+      height: 600,
+//    autoHeight: true,
+      responsive: true,
+      fade: true,
+      imageScaleMode: 'exact',
+      updateHash: true,
+      aspectRatio: 1.5,
+      visibleSize: '100%',
+      forceSize: 'fullWidth'
+    });
+
+    // instantiate fancybox when a link is clicked
+    $( '#projects .sp-lightbox' ).on( 'click', function( event ) {
+      event.preventDefault();
+
+      // check if the clicked link is also used in swiping the slider
+      // by checking if the link has the 'sp-swiping' class attached.
+      // if the slider is not being swiped, open the lightbox programmatically,
+      // at the correct index
+      if ( $( '#projects' ).hasClass( 'sp-swiping' ) === false ) {
+        $.fancybox.open( $( '#projects .sp-image' ).parent( 'a' ), { index: $( this ).parents( '.sp-slide' ).index() } );
+      }
+    });
+  });
+</script>
+</head>
+<body unresolved>
+  <div class="row" class = "stars">
+    <div id="container" class = "stars">
+    </div>
+      <script>
+        /**
+          * @author mrdoob / http://mrdoob.com/
+        */
+        var container, stats;
+        var camera, scene, renderer;
+        var group;
+        var mouseX = 0, mouseY = 0;
+
+        var windowHalfX = window.innerWidth / 4;
+        var windowHalfY = window.innerHeight / 4;
+
+        init();
+        animate();
+
+        function init() {
+
+          container = document.getElementById( 'container' );
+
+          camera = new THREE.PerspectiveCamera( 60, window.innerWidth / window.innerHeight, 1, 2000 );
+          camera.position.z = 500;
+
+          scene = new THREE.Scene();
+
+          group = new THREE.Group();
+          scene.add( group );
+
+
+
+          var loader = new THREE.TextureLoader();
+          loader.load( 'textures/land_ocean_ice_cloud_2048.jpg', function ( texture ) {
+
+            var geometry = new THREE.SphereGeometry( 200, 20, 20 );
+
+            var material = new THREE.MeshBasicMaterial( { map: texture, overdraw: 0.5 } );
+            var mesh = new THREE.Mesh( geometry, material );
+            group.add( mesh );
+
+          } );
+
+
+          // shadow
+
+          var canvas = document.createElement( 'canvas' );
+          canvas.width = 128;
+          canvas.height = 128;
+
+
+          var context = canvas.getContext( '2d' );
+          var gradient = context.createRadialGradient(
+            canvas.width / 2,
+            canvas.height / 2,
+            0,
+            canvas.width / 2,
+            canvas.height / 2,
+            canvas.width / 2
+          );
+          gradient.addColorStop( 0.1, 'rgba(0,0,0,0)' );
+          gradient.addColorStop( 1, 'rgba(0,0,0,0)' );
+
+          context.fillStyle = gradient;
+          context.fillRect( 0, 0, canvas.width, canvas.height );
+
+          var texture = new THREE.Texture( canvas );
+          texture.needsUpdate = true;
+
+          var geometry = new THREE.PlaneBufferGeometry( 300, 300, 3, 3 );
+          var material = new THREE.MeshBasicMaterial( { map: texture, overdraw: 0.5 } );
+
+          var mesh = new THREE.Mesh( geometry, material );
+          mesh.position.y = - 250;
+          mesh.rotation.x = - Math.PI / 2;
+          group.add( mesh );
+
+          var starSphere  = createStarfield();
+          scene.add(starSphere);
+
+
+          renderer = new THREE.CanvasRenderer();
+          renderer.setClearColor( 0x000000, 0 );
+          renderer.setPixelRatio( window.devicePixelRatio );
+          renderer.setSize( 900, 450 );
+          container.appendChild( renderer.domElement );
+
+          stats = new Stats();
+          stats.domElement.style.position = 'absolute';
+          stats.domElement.style.top = '0px';
+          //container.appendChild( stats.domElement );
+
+          document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
+          //
+
+          window.addEventListener( 'resize', onWindowResize, false );
+
+        }
+
+        function onWindowResize() {
+
+          windowHalfX = window.innerWidth / 2;
+          windowHalfY = window.innerHeight / 2;
+
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+
+          renderer.setSize( window.innerWidth, window.innerHeight );
+
+        }
+
+        function onDocumentMouseMove( event ) {
+
+          mouseX = ( event.clientX - windowHalfX );
+          mouseY = ( event.clientY - windowHalfY );
+
+        }
+
+        //
+
+
+        function createStarfield() {
+          var texture = THREE.ImageUtils.loadTexture('images/galaxy_starfield.png');
+          var material  = new THREE.MeshBasicMaterial({
+            map : texture,
+            side  : THREE.BackSide
+          });
+          var geometry  = new THREE.SphereGeometry(100, 32, 32);
+          var mesh  = new THREE.Mesh(geometry, material);
+          return mesh
+        }
+
+        function animate() {
+
+          requestAnimationFrame( animate );
+
+          render();
+          stats.update();
+
+        }
+
+        function render() {
+
+          camera.position.x += ( mouseX - camera.position.x ) * 0.05;
+          camera.position.y += ( - mouseY - camera.position.y ) * 0.05;
+          camera.lookAt( scene.position );
+
+          group.rotation.y -= 0.005;
+
+          renderer.render( scene, camera );
+
+        }
+      </script>
+  </div>
+  <div class="container-fluid stars" id="main">
+    <div class="header">
+      <div id="header1" class="row">
+      </div>
+      <div id="header2" class="row">
+      </div>
+      <div id="header3" class="row">
+        <ul id="topContacts" class='flex-box'></ul>
+      </div>
+      <div id="header4" class="row">
+        <h4>My Skill Set</h4>
+    </div>
+    <div style='clear: both;'></div>
+    <div id="workExperience" class='row'>
+      <h2>Work Experience</h2>
+    </div>
+    <div class="slider-pro gray" id="projects">
+      <h2>Projects</h2>
+      <div class="sp-slides">
+      </div>
+    </div>
+    <div style='clear: both;'></div>
+    <div id="education" class='gray row'>
+      <h2>Education</h2>
+      <h2>Learning Institutions</h2>
+    </div>
+    <div style='clear: both;'></div>
+    <div id="online" class='row'>
+      <h2>Online Courses</h2>
+    </div>
+    <div id="mapDiv">
+      <h2>Where I've Lived and Worked</h2>
+    </div>
+    <div id="letsConnect" class='dark-gray'>
+      <h2 class='white-text center-text'>Let's Connect</h2>
+        <ul id="footerContacts" class="flex-box">
+        </ul>
+    </div>
+  </div>
+
+
+  <script src="js/resumeBuilder.js"></script>
+
+
+  <script type="text/javascript">
+
+    if(document.getElementsByTagName('h1').length === 0) {
+      document.getElementById('header').style.backgroundColor = "black";
+    }
+    if(document.getElementsByClassName('work-entry').length === 0) {
+      document.getElementById('workExperience').style.backgroundColor = "black";
+    }
+    if(document.getElementsByClassName('project-entry').length === 0) {
+      document.getElementById('projects').style.backgroundColor = "black";
+    }
+    if(document.getElementsByClassName('education-entry').length === 0) {
+      document.getElementById('education').style.backgroundColor = "black";
+    }
+    if(document.getElementsByClassName('flex-item').length === 0) {
+      document.getElementById('letsConnect').style.backgroundColor = "black";
+    }
+    if(document.getElementById('map') === null) {
+      document.getElementById('mapDiv').style.backgroundColor = "black";
+    }
+  </script>
+</body>
+</html>
